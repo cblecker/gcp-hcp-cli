@@ -2,6 +2,7 @@
 
 import json
 import os
+import re
 import subprocess
 import shutil
 from typing import Dict, Any, Optional
@@ -20,6 +21,10 @@ class HypershiftError(Exception):
 
 # Maximum length for infrastructure ID
 MAX_INFRA_ID_LENGTH = 15
+
+# GCP resource naming pattern: must start with a lowercase letter,
+# followed by lowercase letters, digits, or hyphens.
+INFRA_ID_PATTERN = r"^[a-z][-a-z0-9]*$"
 
 # Service accounts created by hypershift IAM setup
 # Key: internal name used in hypershift output
@@ -55,6 +60,29 @@ def require_hypershift_binary(config=None) -> str:
     if not hypershift_bin:
         raise HypershiftError(HYPERSHIFT_NOT_FOUND_ERROR)
     return hypershift_bin
+
+
+def validate_infra_id(infra_id: str) -> None:
+    """Validate that the infrastructure ID meets GCP resource naming constraints.
+
+    GCP resource names must start with a lowercase letter and contain only
+    lowercase letters, digits, or hyphens. The infraID is also limited to
+    MAX_INFRA_ID_LENGTH characters.
+
+    Args:
+        infra_id: The infrastructure identifier to validate
+
+    Raises:
+        ValueError: If the infra_id does not comply with GCP naming rules
+    """
+    validate_infra_id_length(infra_id)
+    if not re.match(INFRA_ID_PATTERN, infra_id):
+        raise ValueError(
+            f"Infrastructure ID '{infra_id}' is invalid. "
+            f"It must start with a lowercase letter and contain only "
+            f"lowercase letters, digits, or hyphens "
+            f"(pattern: {INFRA_ID_PATTERN})."
+        )
 
 
 def validate_infra_id_length(infra_id: str) -> None:

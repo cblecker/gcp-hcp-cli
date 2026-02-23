@@ -1055,7 +1055,10 @@ def cluster_status(
 )
 @click.option(
     "--infra-id",
-    help="Infrastructure ID for infrastructure setup (defaults to cluster name)",
+    help=(
+        "Infrastructure ID for infrastructure setup (defaults to cluster name). "
+        "Must start with a lowercase letter and be 15 characters or less."
+    ),
 )
 @click.option(
     "--region",
@@ -1158,7 +1161,9 @@ def create_cluster(
     CLUSTER_NAME: Name for the new cluster (must be DNS-compatible).
 
     NOTE: Infrastructure ID (defaults to cluster name) must be 15 characters
-    or less. Use --infra-id to specify a shorter identifier if needed.
+    or less and must start with a lowercase letter (only lowercase letters,
+    digits, and hyphens allowed). If the cluster name starts with a number,
+    use --infra-id to specify a compliant identifier.
 
     \b
     Two modes of operation:
@@ -1208,15 +1213,15 @@ def create_cluster(
         effective_region = region
 
         # =================================================================
-        # Validate infra-id length for GCP resource constraints
+        # Validate infra-id for GCP resource naming constraints
         # =================================================================
-        from ...utils.hypershift import validate_infra_id_length
+        from ...utils.hypershift import validate_infra_id
 
         try:
-            validate_infra_id_length(effective_infra_id)
+            validate_infra_id(effective_infra_id)
         except ValueError as e:
             raise click.ClickException(
-                f"{e}\nUse --infra-id to specify a shorter identifier."
+                f"{e}\nUse --infra-id to specify a compliant identifier."
             )
 
         # =================================================================

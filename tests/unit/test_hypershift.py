@@ -12,12 +12,14 @@ from gcphcp.utils.hypershift import (
     check_hypershift_installed,
     validate_iam_config,
     validate_infra_config,
+    validate_infra_id,
     validate_infra_id_length,
     iam_config_to_wif_spec,
     destroy_iam_gcp,
     destroy_infra_gcp,
     SERVICE_ACCOUNTS,
     MAX_INFRA_ID_LENGTH,
+    INFRA_ID_PATTERN,
 )
 
 
@@ -262,6 +264,80 @@ class TestValidateInfraIdLength:
 
         assert "too long" in str(exc_info.value)
         assert str(MAX_INFRA_ID_LENGTH) in str(exc_info.value)
+
+
+class TestValidateInfraId:
+    """Tests for validate_infra_id function."""
+
+    def test_validate_infra_id_valid_short(self):
+        """When infra ID is valid and short it should not raise."""
+        validate_infra_id("my-infra")
+
+    def test_validate_infra_id_valid_single_char(self):
+        """When infra ID is a single lowercase letter it should not raise."""
+        validate_infra_id("a")
+
+    def test_validate_infra_id_valid_max_length(self):
+        """When infra ID is exactly max length it should not raise."""
+        validate_infra_id("a" * MAX_INFRA_ID_LENGTH)
+
+    def test_validate_infra_id_valid_with_digits(self):
+        """When infra ID starts with letter and contains digits it should not raise."""
+        validate_infra_id("my-cluster-01")
+
+    def test_validate_infra_id_valid_all_lowercase(self):
+        """When infra ID is all lowercase letters it should not raise."""
+        validate_infra_id("abcdef")
+
+    def test_validate_infra_id_starts_with_digit(self):
+        """When infra ID starts with a digit it should raise ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            validate_infra_id("1my-infra")
+
+        assert "must start with a lowercase letter" in str(exc_info.value)
+
+    def test_validate_infra_id_starts_with_digit_uuid(self):
+        """When infra ID is a UUID starting with a digit it should raise ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            validate_infra_id("04e6fe60")
+
+        assert "must start with a lowercase letter" in str(exc_info.value)
+
+    def test_validate_infra_id_uppercase(self):
+        """When infra ID contains uppercase letters it should raise ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            validate_infra_id("My-Infra")
+
+        assert "must start with a lowercase letter" in str(exc_info.value)
+
+    def test_validate_infra_id_underscore(self):
+        """When infra ID contains underscores it should raise ValueError."""
+        with pytest.raises(ValueError) as exc_info:
+            validate_infra_id("my_infra")
+
+        assert "must start with a lowercase letter" in str(exc_info.value)
+
+    def test_validate_infra_id_too_long(self):
+        """When infra ID exceeds max length it should raise ValueError."""
+        long_id = "a" * (MAX_INFRA_ID_LENGTH + 1)
+        with pytest.raises(ValueError) as exc_info:
+            validate_infra_id(long_id)
+
+        assert "too long" in str(exc_info.value)
+
+    def test_validate_infra_id_empty(self):
+        """When infra ID is empty it should raise ValueError."""
+        with pytest.raises(ValueError):
+            validate_infra_id("")
+
+    def test_validate_infra_id_starts_with_hyphen(self):
+        """When infra ID starts with a hyphen it should raise ValueError."""
+        with pytest.raises(ValueError):
+            validate_infra_id("-my-infra")
+
+    def test_infra_id_pattern_constant_exists(self):
+        """The INFRA_ID_PATTERN constant should be the expected regex."""
+        assert INFRA_ID_PATTERN == r"^[a-z][-a-z0-9]*$"
 
 
 class TestValidateInfraConfig:

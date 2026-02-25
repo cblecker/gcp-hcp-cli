@@ -33,6 +33,7 @@ SERVICE_ACCOUNTS = {
     "ctrlplane-op": "Control Plane Operator",
     "nodepool-mgmt": "Node Pool Management",
     "cloud-controller": "Cloud Controller Manager",
+    "gcp-pd-csi": "GCP PD CSI Driver",
 }
 
 # Error message for missing hypershift CLI
@@ -283,6 +284,7 @@ def iam_config_to_wif_spec(iam_config: Dict[str, Any]) -> Dict[str, Any]:
             "controlPlaneEmail": service_accounts.get("ctrlplane-op"),
             "nodePoolEmail": service_accounts.get("nodepool-mgmt"),
             "cloudControllerEmail": service_accounts.get("cloud-controller"),
+            "storageEmail": service_accounts.get("gcp-pd-csi"),
         },
     }
 

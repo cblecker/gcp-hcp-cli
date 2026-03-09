@@ -209,7 +209,10 @@ class TestWifConfigToClusterSpec:
         ccm_email = result["serviceAccountsRef"]["cloudControllerEmail"]
         assert ccm_email == "cloudcontroller@example.com"
         assert result["serviceAccountsRef"]["storageEmail"] == "storage@example.com"
-        assert result["serviceAccountsRef"]["imageRegistryEmail"] == "imageregistry@example.com"
+        assert (
+            result["serviceAccountsRef"]["imageRegistryEmail"]
+            == "imageregistry@example.com"
+        )
 
     def test_iam_config_to_wif_spec_empty_config(self):
         """When converting empty config it should return None values."""
